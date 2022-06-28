@@ -4,13 +4,19 @@ import com.mercadolivro.dto.CustomerDto
 import com.mercadolivro.model.Customer
 import com.mercadolivro.repository.CustomerRepository
 import com.mercadolivro.exception.NotFoundException
+import org.springframework.stereotype.Service
 
+@Service
 class CustomerService(
     private val repository: CustomerRepository,
     private val notFoundMessage: String = "Customer not found"
 ) {
 
-    fun listAll(): List<CustomerDto> {
+    fun listAll(name: String?): List<CustomerDto> {
+        name?.let {
+            return repository.findByNameContaining(it)
+        }
+
         return repository.findAll().map { customer ->
             CustomerDto(customer.name, customer.email)
         }.toList()
@@ -19,6 +25,10 @@ class CustomerService(
     fun findBy(id: Long): CustomerDto {
         val customer = repository.findById(id).get()
         return CustomerDto(customer.name, customer.email)
+    }
+
+    fun findCustomer(id: Long) : Customer {
+        return repository.findById(id).get()
     }
 
     fun insert(customerDto: CustomerDto) {
@@ -37,6 +47,10 @@ class CustomerService(
     }
 
     fun delete(id: Long) {
+        if(!repository.existsById(id)) {
+            throw NotFoundException(notFoundMessage)
+        }
+
         repository.deleteById(id)
     }
 }

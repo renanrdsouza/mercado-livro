@@ -10,17 +10,17 @@ import org.springframework.web.util.UriComponentsBuilder
 @RestController
 @RequestMapping("/customers")
 class CustomerController(
-    private val service: CustomerService
+    val customerService: CustomerService
 ) {
 
     @GetMapping
-    fun listAll(): ResponseEntity<List<CustomerDto>> {
-        return ResponseEntity.ok().body(service.listAll())
+    fun listAll(@RequestParam name: String?): ResponseEntity<List<CustomerDto>> {
+        return ResponseEntity.ok().body(customerService.listAll(name))
     }
 
     @GetMapping("/{id}")
     fun findBy(@PathVariable id: Long): ResponseEntity<CustomerDto> {
-        return ResponseEntity.ok().body(service.findBy(id))
+        return ResponseEntity.ok().body(customerService.findBy(id))
     }
 
     @PostMapping
@@ -28,7 +28,7 @@ class CustomerController(
         @RequestBody customerDto: CustomerDto,
         uriBuilder: UriComponentsBuilder
     ): ResponseEntity<CustomerDto> {
-        val customer = service.insert(customerDto)
+        val customer = customerService.insert(customerDto)
         val uri = uriBuilder.path("/topicos").build().toUri()
         return ResponseEntity.created(uri).body(customerDto)
     }
@@ -38,13 +38,13 @@ class CustomerController(
         @PathVariable id: Long,
         @RequestBody customerDto: CustomerDto
     ): ResponseEntity<CustomerDto> {
-        val customerUpdated = service.update(id, customerDto)
+        val customerUpdated = customerService.update(id, customerDto)
         return ResponseEntity.ok().body(customerUpdated)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(@PathVariable id: Long) {
-        service.delete(id)
+        customerService.delete(id)
     }
 }
