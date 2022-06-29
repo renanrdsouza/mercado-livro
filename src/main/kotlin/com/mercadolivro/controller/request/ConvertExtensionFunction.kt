@@ -7,7 +7,9 @@ import com.mercadolivro.model.Book
 import com.mercadolivro.model.Customer
 
 fun CustomerDto.toCustomer(): Customer {
-    return Customer(name = this.name, email = this.email)
+    return Customer(
+        name = this.name,
+        email = this.email)
 }
 
 fun BookDto.toBook(customer: Customer): Book {
