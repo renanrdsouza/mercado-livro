@@ -1,4 +1,4 @@
 package com.mercadolivro.exception
 
-class NotFoundException(message: String?) : RuntimeException(message) {
+class NotFoundException(override val message: String, val errorCode: String) : RuntimeException() {
 }

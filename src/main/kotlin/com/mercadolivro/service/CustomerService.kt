@@ -1,6 +1,9 @@
 package com.mercadolivro.service
 
-import com.mercadolivro.dto.CustomerDto
+import com.mercadolivro.controller.response.CustomerResponse
+import com.mercadolivro.dto.PutCustomerDto
+import com.mercadolivro.enums.CustomerStatus
+import com.mercadolivro.enums.Errors
 import com.mercadolivro.model.Customer
 import com.mercadolivro.repository.CustomerRepository
 import com.mercadolivro.exception.NotFoundException
@@ -9,48 +12,47 @@ import org.springframework.stereotype.Service
 @Service
 class CustomerService(
     private val repository: CustomerRepository,
-    private val notFoundMessage: String = "Customer not found"
+    private val bookService: BookService
 ) {
 
-    fun listAll(name: String?): List<CustomerDto> {
+    fun listAll(name: String?): List<CustomerResponse> {
         name?.let {
             return repository.findByNameContaining(it)
         }
 
         return repository.findAll().map { customer ->
-            CustomerDto(customer.name, customer.email)
+            CustomerResponse(customer.name, customer.email, customer.status)
         }.toList()
     }
 
-    fun findBy(id: Long): CustomerDto {
-        val customer = repository.findById(id).get()
-        return CustomerDto(customer.name, customer.email)
+    fun findBy(id: Long): CustomerResponse {
+        val customer = repository.findById(id).orElseThrow { NotFoundException(Errors.ML2001.message.format(id), Errors.ML2001.code) }
+        return CustomerResponse(customer.name, customer.email, customer.status)
     }
 
     fun findCustomer(id: Long) : Customer {
         return repository.findById(id).get()
     }
 
-    fun insert(customerDto: CustomerDto) {
-        repository.save(Customer(null, customerDto.name, customerDto.email))
+    fun insert(customerDto: CustomerResponse) {
+        repository.save(Customer(null, customerDto.name, customerDto.email, status = CustomerStatus.ATIVO))
     }
 
-    fun update(id: Long, customerDto: CustomerDto): CustomerDto {
-        val customer = repository.findById(id)
-            .orElseThrow{NotFoundException(notFoundMessage)}
+    fun update(id: Long, putCustomerDto: PutCustomerDto): CustomerResponse {
+        val customer = repository.findById(id).orElseThrow { NotFoundException(Errors.ML2001.message.format(id), Errors.ML2001.code) }
 
-        customer.name = customerDto.name
-        customer.email = customerDto.email
+        customer.name = putCustomerDto.name
+        customer.email = putCustomerDto.email
         repository.save(customer)
 
-        return CustomerDto(customer.name, customer.email)
+        return CustomerResponse(customer.name, customer.email, customer.status)
     }
 
     fun delete(id: Long) {
-        if(!repository.existsById(id)) {
-            throw NotFoundException(notFoundMessage)
-        }
+        val customer = repository.findById(id).get()
+        bookService.deleteByCustomer(customer)
 
-        repository.deleteById(id)
+        customer.status = CustomerStatus.INATIVO
+        repository.save(customer)
     }
 }

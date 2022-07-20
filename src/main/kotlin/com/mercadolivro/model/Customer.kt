@@ -1,11 +1,8 @@
 package com.mercadolivro.model
 
+import com.mercadolivro.enums.CustomerStatus
 import org.jetbrains.annotations.NotNull
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
+import javax.persistence.*
 
 @Entity(name = "customer")
 data class Customer(
@@ -18,5 +15,9 @@ data class Customer(
     var name: String,
 
     @Column
-    var email: String
+    var email: String,
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    var status: CustomerStatus? = null
 )

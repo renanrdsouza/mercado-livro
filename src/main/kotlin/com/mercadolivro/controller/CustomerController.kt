@@ -1,6 +1,7 @@
 package com.mercadolivro.controller
 
-import com.mercadolivro.dto.CustomerDto
+import com.mercadolivro.controller.response.CustomerResponse
+import com.mercadolivro.dto.PutCustomerDto
 import com.mercadolivro.service.CustomerService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -14,21 +15,21 @@ class CustomerController(
 ) {
 
     @GetMapping
-    fun listAll(@RequestParam name: String?): ResponseEntity<List<CustomerDto>> {
+    fun listAll(@RequestParam name: String?): ResponseEntity<List<CustomerResponse>> {
         return ResponseEntity.ok().body(customerService.listAll(name))
     }
 
     @GetMapping("/{id}")
-    fun findBy(@PathVariable id: Long): ResponseEntity<CustomerDto> {
+    fun findBy(@PathVariable id: Long): ResponseEntity<CustomerResponse> {
         return ResponseEntity.ok().body(customerService.findBy(id))
     }
 
     @PostMapping
     fun insert(
-        @RequestBody customerDto: CustomerDto,
+        @RequestBody customerDto: CustomerResponse,
         uriBuilder: UriComponentsBuilder
-    ): ResponseEntity<CustomerDto> {
-        val customer = customerService.insert(customerDto)
+    ): ResponseEntity<CustomerResponse> {
+        customerService.insert(customerDto)
         val uri = uriBuilder.path("/topicos").build().toUri()
         return ResponseEntity.created(uri).body(customerDto)
     }
@@ -36,9 +37,9 @@ class CustomerController(
     @PutMapping
     fun update(
         @PathVariable id: Long,
-        @RequestBody customerDto: CustomerDto
-    ): ResponseEntity<CustomerDto> {
-        val customerUpdated = customerService.update(id, customerDto)
+        @RequestBody customer: PutCustomerDto
+    ): ResponseEntity<CustomerResponse> {
+        val customerUpdated = customerService.update(id, customer)
         return ResponseEntity.ok().body(customerUpdated)
     }
 
